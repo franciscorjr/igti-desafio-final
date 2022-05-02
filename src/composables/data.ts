@@ -2,23 +2,44 @@ import ICountry from '@/interface/ICountry';
 import axios from 'axios';
 import {ref} from 'vue'
 export default function useData() {
-    const countries = ref([]);
-    const cities = ref([]);
+    const origingCountries = ref([]);
+    const origingCities = ref([]);
+    const destinyCountries = ref([]);
+    const destinyCities = ref([]);
     
     const getCountries = async() => {
         const response = await axios.get('http://localhost:3000/countries')
-        countries.value = response.data;
+        origingCountries.value = response.data;
+    }
+    
+    const getCitiesFromSelectedCountry = async(country: ICountry) => {        
+        const response = await axios.get('http://localhost:3000/countries/?country=' + country)
+        const c = response.data[0];       
+        origingCities.value = c.cities;
     }
 
-    const getCitiesFromSelectedCountry = async(country: ICountry) => {
+    const getDestinyCountries = async() => {
+        const response = await axios.get('http://localhost:3000/countries')
+        destinyCountries.value = response.data;
+    }
+
+    const getDestinyCitiesFromSelectedCountry = async(country: ICountry, origingCity: any) => {        
         const response = await axios.get('http://localhost:3000/countries/?country=' + country)
-        cities.value = response.data;
+        const c = response.data[0];
+        const result = c.cities.filter((city:any) => {
+            return city.city !== origingCity.value
+        });        
+        destinyCities.value = result;
     }
 
     return {
-        countries,
-        cities,
+        origingCountries,
+        origingCities,
+        destinyCountries,
+        destinyCities,
         getCountries,
-        getCitiesFromSelectedCountry
+        getCitiesFromSelectedCountry,
+        getDestinyCountries,
+        getDestinyCitiesFromSelectedCountry,
     }
 } 

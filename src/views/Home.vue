@@ -14,30 +14,28 @@
               <label for="origingCountry" class="form-label">País de origem</label>
               <select class="form-select" id="origingCountry" v-model="origingCountry" required>
                 <option disabled value="">Choose...</option>
-                <option v-for="(item, index) in countries" :key="index" >{{item.country}}</option>
+                <option v-for="(item, index) in origingCountries" :key="index" >{{item.country}}</option>
               </select>
             </div>
             <div class="col-md-12">
-              <label for="origingCity" class="form-label">Cidade de origem {{cities}}</label>
-              <div v-for="(city, index) in cities" :key="index">
-                <select class="form-select" id="origingCity" v-model="origingCity" required>
-                  <option disabled value="">Choose...{{city}}</option>
-                  <option v-for="(item, index) in city" :key="index" >{{city}}</option>
-                </select>
-              </div>
-            </div>
-            <div class="col-md-12">
-              <label for="country" class="form-label">País de destino</label>
-              <select class="form-select" id="country" required>
-                <option value="">Choose...</option>
-                <option>United States</option>
+              <label for="origingCity" class="form-label">Cidade de origem</label>
+              <select class="form-select" id="origingCity" v-model="origingCity" required>
+                <option disabled value="">Choose...</option>
+                <option v-for="(item, index) in origingCities" :key="index" >{{item.city}}</option>
               </select>
             </div>
             <div class="col-md-12">
-              <label for="country" class="form-label">Cidade de destino</label>
-              <select class="form-select" id="country" required>
-                <option value="">Choose...</option>
-                <option>United States</option>
+              <label for="destinyCountry" class="form-label">País de destino</label>
+              <select class="form-select" id="destinyCountry" v-model="destinyCountry" required>
+                <option disabled value="">Choose...</option>
+                <option v-for="(item, index) in destinyCountries" :key="index" >{{item.country}}</option>
+              </select>
+            </div>
+            <div class="col-md-12">
+              <label for="destinyCity" class="form-label">Cidade de destino</label>
+              <select class="form-select" id="destinyCity" v-model="destinyCity" required>
+                <option disabled value="">Choose...</option>
+                <option v-for="(item, index) in destinyCities" :key="index" >{{item.city}}</option>
               </select>
             </div>
             <div class="col-md-12">
@@ -79,22 +77,22 @@
           </li>
           <li class="list-group-item d-flex justify-content-between lh-sm">
             <div>
-              <h6 class="my-0">Second product</h6>
-              <small class="text-muted">Brief description</small>
+              <h6 class="my-0">Cidade de Origem</h6>
+              <small class="text-muted">{{origingCity}}</small>
             </div>
             <span class="text-muted">$8</span>
           </li>
           <li class="list-group-item d-flex justify-content-between lh-sm">
             <div>
-              <h6 class="my-0">Third item</h6>
-              <small class="text-muted">Brief description</small>
+              <h6 class="my-0">País de Destino</h6>
+              <small class="text-muted">{{destinyCountry}}</small>
             </div>
             <span class="text-muted">$5</span>
           </li>
           <li class="list-group-item d-flex justify-content-between bg-light">
             <div class="text-success">
-              <h6 class="my-0">Promo code</h6>
-              <small>EXAMPLECODE</small>
+              <h6 class="my-0">Cidade de Destino</h6>
+              <small>{{destinyCity}}</small>
             </div>
             <span class="text-success">−$5</span>
           </li>
@@ -116,23 +114,40 @@ import { defineComponent, onMounted, ref, watch } from "vue";
 export default defineComponent({
   name: "Home",
   setup() {
-    const { countries, cities, getCountries, getCitiesFromSelectedCountry} = useData();    
+    const { origingCountries, origingCities, destinyCountries, destinyCities, getCountries, getDestinyCountries, getCitiesFromSelectedCountry, getDestinyCitiesFromSelectedCountry} = useData();    
 
     const origingCountry = ref();
     const origingCity = ref();
+    const destinyCountry = ref();
+    const destinyCity = ref();
 
-    onMounted(getCountries)
+    onMounted(() => {
+      getCountries(),
+      getDestinyCountries()
+    });
 
     watch(origingCountry, (newValue, oldValue) => {
-      console.log("old value: " + oldValue + " New value: " + newValue)
       getCitiesFromSelectedCountry(newValue);
+    });
+
+    watch(origingCity, (newValue,oldValue) =>{
+      destinyCity.value = '';
+      getDestinyCitiesFromSelectedCountry(origingCountry.value, origingCity);
+    });
+
+    watch(destinyCountry, (newValue, oldValue) => {
+      getDestinyCitiesFromSelectedCountry(newValue, origingCity);
     });
 
     return{
       origingCountry,
       origingCity,
-      countries,
-      cities
+      destinyCountry,
+      destinyCity,
+      origingCountries,
+      origingCities,
+      destinyCountries,
+      destinyCities
     }
   }
 });

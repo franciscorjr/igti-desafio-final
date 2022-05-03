@@ -119,7 +119,7 @@ export default function useData() {
         }
 
         return {
-            'adultBasePrice': parseFloat(adultBasePrice.toFixed(2)),
+            'adultBasePrice': parseFloat(adultBasePrice.toPrecision(2)),
             'kidBasePrice': parseFloat(kidBasePrice.toFixed(2))
         }
 

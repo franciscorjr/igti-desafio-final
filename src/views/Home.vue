@@ -39,28 +39,35 @@
               </select>
             </div>
             <div class="col-md-12">
-              <label for="adulto" class="form-label">Adultos</label>
-              <input type="number" name="adulto" id="adulto" required>
+              <label for="adulto" class="form-label">Adultos</label><br>
+              <button type="button" class="btn btn-dark" @click="removeAdult">-</button>
+              <input type="number" name="adulto" class="no-border" id="adulto" v-model="adultQuantity" required>
+              <button type="button" class="btn btn-dark" @click="addAdult">+</button>
             </div>
             <div class="col-md-12">
-              <label for="adulto" class="form-label">Crianças</label>
-              <input type="number" name="adulto" id="adulto" required>
+              <label for="crianca" class="form-label">Crianças</label><br>
+              <button type="button" class="btn btn-dark" @click="removeKid">-</button>
+              <input type="number" name="crianca" class="no-border" id="crianca" v-model="kidQuantity" required>
+              <button type="button" class="btn btn-dark" @click="addKid">+</button>
             </div>
             <div class="form-check">
-              <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1">
+              <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" value="economica" v-model="typeOfFlight" checked>
               <label class="form-check-label" for="flexRadioDefault1">
-                Default radio
+                Econômica
               </label>
             </div>
             <div class="form-check">
-              <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" checked>
+              <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" value="executiva" v-model="typeOfFlight">
               <label class="form-check-label" for="flexRadioDefault2">
-                Default checked radio
+                Executiva
               </label>
             </div>
-            <label for="customRange1" class="form-label">Example range</label>
-            <input type="range" class="form-range" id="customRange1">
+            <label for="customRange1" class="form-label">Utilizar {{miles}} milhas </label>
+            <input type="range" class="form-range" id="customRange1" v-model="miles">
           </div>
+          <hr class="my-4">
+
+          <button class="w-100 btn btn-primary btn-lg" @click="calculate">Calcular Valores</button>
       </div>
 
       <div class="col-md-5 col-lg-4 order-md-last">
@@ -70,35 +77,57 @@
         <ul class="list-group mb-3">
           <li class="list-group-item d-flex justify-content-between lh-sm">
             <div>
-              <h6 class="my-0">País de Origem</h6>
-              <small class="text-muted">{{origingCountry}}</small>
+              <h6 class="my-0">Origem</h6>
+              <small class="text-muted">{{origingCountry}} ({{origingCity}})</small>
             </div>
-            <span class="text-muted">$12</span>
           </li>
           <li class="list-group-item d-flex justify-content-between lh-sm">
             <div>
-              <h6 class="my-0">Cidade de Origem</h6>
-              <small class="text-muted">{{origingCity}}</small>
+              <h6 class="my-0">Destino</h6>
+              <small class="text-muted"> {{destinyCountry}} ({{destinyCity}})</small>
             </div>
-            <span class="text-muted">$8</span>
           </li>
           <li class="list-group-item d-flex justify-content-between lh-sm">
             <div>
-              <h6 class="my-0">País de Destino</h6>
-              <small class="text-muted">{{destinyCountry}}</small>
+              <h6 class="my-0">Distância</h6>
+              <small class="text-muted"> KM</small>
             </div>
-            <span class="text-muted">$5</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between bg-light">
+            <div>
+              <h6 class="my-0">Passageiros</h6>
+              <small>{{adultQuantity}} Adulto(s) e {{kidQuantity}} Criança(s)</small>
+            </div>
+          </li>
+          <li class="list-group-item d-flex justify-content-between bg-light">
+            <div>
+              <h6 class="my-0">Tipo de Vôo (Classe)</h6>
+              <small>{{typeOfFlight}}</small>
+            </div>
+          </li>
+          <li class="list-group-item d-flex justify-content-between bg-light">
+            <div>
+              <h6 class="my-0">Preços</h6>
+              <div v-if="basePrice">
+                <small>Valor total de adultos  R$: {{basePrice.adultBasePrice}}</small><br>
+                <small>Valor total de crianças R$: {{basePrice.kidBasePrice}}</small>
+              </div>
+            </div>
+          </li>
+          <li class="list-group-item d-flex justify-content-between bg-light">
+            <div>
+              <h6 class="my-0">{{miles}} Milhas Utilizadas</h6>
+            </div>
           </li>
           <li class="list-group-item d-flex justify-content-between bg-light">
             <div class="text-success">
-              <h6 class="my-0">Cidade de Destino</h6>
-              <small>{{destinyCity}}</small>
+              <h6 class="my-0">Valor abatido por milhas</h6>
             </div>
-            <span class="text-success">−$5</span>
+            <span class="text-success">R$: 2.000,00</span>
           </li>
           <li class="list-group-item d-flex justify-content-between">
-            <span>Total (USD)</span>
-            <strong>$20</strong>
+            <span>Valor Total</span>
+            <strong>R$: 2.000,00</strong>
           </li>
         </ul>
       </div>
@@ -114,30 +143,84 @@ import { defineComponent, onMounted, ref, watch } from "vue";
 export default defineComponent({
   name: "Home",
   setup() {
-    const { origingCountries, origingCities, destinyCountries, destinyCities, getCountries, getDestinyCountries, getCitiesFromSelectedCountry, getDestinyCitiesFromSelectedCountry} = useData();    
+    const { origingCountries, origingCities, destinyCountries, destinyCities, getCountries, getDestinyCountries, getCitiesFromSelectedCountry, getDestinyCitiesFromSelectedCountry, getOriginCityLatitude, getOriginCityLongitude, getDistance, calculatePrice} = useData();    
 
     const origingCountry = ref();
     const origingCity = ref();
+    let   origingCityLatitude: number;
+    let   origingCityLongitude: number;
     const destinyCountry = ref();
     const destinyCity = ref();
+    let   destinyCityLatitude: number;
+    let   destinyCityLongitude: number;
+    let   distance: number;
+    //let   basePrice: any;
+    const adultQuantity = ref(1);
+    const kidQuantity = ref(0);
+    const miles = ref(0);
+    const typeOfFlight = ref('economica');
+    const basePrice = ref();
+
+  
 
     onMounted(() => {
       getCountries(),
       getDestinyCountries()
     });
 
-    watch(origingCountry, (newValue, oldValue) => {
+    watch(origingCountry, (newValue) => {
       getCitiesFromSelectedCountry(newValue);
     });
 
-    watch(origingCity, (newValue,oldValue) =>{
+    watch(origingCity, async () =>{
       destinyCity.value = '';
       getDestinyCitiesFromSelectedCountry(origingCountry.value, origingCity);
+      origingCityLatitude = await getOriginCityLatitude(origingCountry.value, origingCity);
+      origingCityLongitude = await getOriginCityLongitude(origingCountry.value, origingCity);
+      destinyCountry.value = '';
     });
 
-    watch(destinyCountry, (newValue, oldValue) => {
-      getDestinyCitiesFromSelectedCountry(newValue, origingCity);
+    watch(destinyCountry, (newValue) => {
+      if(destinyCountry.value){
+        getDestinyCitiesFromSelectedCountry(newValue, origingCity);
+      }
     });
+
+    
+    watch(destinyCity, async () => {
+      if(destinyCountry.value){
+        if(destinyCity.value){
+          destinyCityLatitude = await getOriginCityLatitude(destinyCountry.value, destinyCity);
+          destinyCityLongitude = await getOriginCityLongitude(destinyCountry.value, destinyCity);
+        }
+      }
+    });
+
+    const addAdult = () => {
+      adultQuantity.value++;
+    }
+
+    const removeAdult = () => {
+      if( adultQuantity.value >= 1 ){
+        adultQuantity.value--;
+      }
+    }
+
+    const addKid = () => {
+      kidQuantity.value++;
+    }
+
+    const removeKid = () => {
+      if( kidQuantity.value >= 1 ){
+        kidQuantity.value--;
+      }
+    }
+
+    const calculate =  async () => {
+      distance  = await getDistance(origingCityLatitude, origingCityLongitude, destinyCityLatitude, destinyCityLongitude);
+      basePrice.value = await calculatePrice(origingCountry.value, destinyCountry.value, distance, adultQuantity.value, kidQuantity.value, typeOfFlight.value);
+      console.log(basePrice.value);
+    }
 
     return{
       origingCountry,
@@ -147,7 +230,17 @@ export default defineComponent({
       origingCountries,
       origingCities,
       destinyCountries,
-      destinyCities
+      destinyCities,
+      adultQuantity,
+      kidQuantity,
+      miles,
+      typeOfFlight,
+      addAdult,
+      removeAdult,
+      addKid,
+      removeKid,
+      calculate,
+      basePrice
     }
   }
 });
@@ -160,9 +253,19 @@ export default defineComponent({
   -moz-user-select: none;
   user-select: none;
 
+  
+
 @media (min-width: 768px) {
   .bd-placeholder-img-lg {
     font-size: 3.5rem;
   }
 }
+
+  .no-border {
+      border: 0;
+      box-shadow: none; /* You may want to include this as bootstrap applies these styles too */
+      width: 40px;
+      margin: 1em;
+      text-align: right;
+    }
 </style>

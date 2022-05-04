@@ -63,7 +63,7 @@
               </label>
             </div>
             <label for="customRange1" class="form-label">Utilizar {{miles}} milhas </label>
-            <input type="range" class="form-range" id="customRange1" v-model="miles">
+            <input type="range" min="0" max="50000"  class="form-range" id="customRange1" v-model="miles">
           </div>
           <hr class="my-4">
 
@@ -90,7 +90,7 @@
           <li class="list-group-item d-flex justify-content-between lh-sm">
             <div>
               <h6 class="my-0">Distância</h6>
-              <small class="text-muted"> KM</small>
+              <small class="text-muted"> {{distance}} KM</small>
             </div>
           </li>
           <li class="list-group-item d-flex justify-content-between bg-light">
@@ -110,7 +110,8 @@
               <h6 class="my-0">Preços</h6>
               <div v-if="basePrice">
                 <small>Valor total de adultos  R$: {{basePrice.adultBasePrice}}</small><br>
-                <small>Valor total de crianças R$: {{basePrice.kidBasePrice}}</small>
+                <small>Valor total de crianças R$: {{basePrice.kidBasePrice}}</small><br>
+                <small>Sub Total               R$: {{parseFloat(basePrice.kidBasePrice + basePrice.adultBasePrice).toFixed(2)}}</small>
               </div>
             </div>
           </li>
@@ -123,11 +124,13 @@
             <div class="text-success">
               <h6 class="my-0">Valor abatido por milhas</h6>
             </div>
-            <span class="text-success">R$: 2.000,00</span>
+            <span class="text-success">R$: {{totalAbatimento}}</span>
           </li>
           <li class="list-group-item d-flex justify-content-between">
             <span>Valor Total</span>
-            <strong>R$: 2.000,00</strong>
+            <div v-if="basePrice">
+              <strong>R$: {{basePrice.total}}</strong>
+            </div>
           </li>
         </ul>
       </div>
@@ -143,7 +146,7 @@ import { defineComponent, onMounted, ref, watch } from "vue";
 export default defineComponent({
   name: "Home",
   setup() {
-    const { origingCountries, origingCities, destinyCountries, destinyCities, getCountries, getDestinyCountries, getCitiesFromSelectedCountry, getDestinyCitiesFromSelectedCountry, getOriginCityLatitude, getOriginCityLongitude, getDistance, calculatePrice} = useData();    
+    const { origingCountries, origingCities, destinyCountries, destinyCities, getCountries, getDestinyCountries, getCitiesFromSelectedCountry, getDestinyCitiesFromSelectedCountry, getOriginCityLatitude, getOriginCityLongitude, getDistance, calculatePrice, abatimentoPorMilhas} = useData();    
 
     const origingCountry = ref();
     const origingCity = ref();
@@ -153,13 +156,13 @@ export default defineComponent({
     const destinyCity = ref();
     let   destinyCityLatitude: number;
     let   destinyCityLongitude: number;
-    let   distance: number;
-    //let   basePrice: any;
+    const distance = ref();
     const adultQuantity = ref(1);
     const kidQuantity = ref(0);
     const miles = ref(0);
     const typeOfFlight = ref('economica');
     const basePrice = ref();
+    const totalAbatimento = ref();
 
   
 
@@ -196,6 +199,10 @@ export default defineComponent({
       }
     });
 
+    watch(miles, async () => {
+      totalAbatimento.value = await abatimentoPorMilhas(miles.value);
+    });    
+
     const addAdult = () => {
       adultQuantity.value++;
     }
@@ -217,8 +224,8 @@ export default defineComponent({
     }
 
     const calculate =  async () => {
-      distance  = await getDistance(origingCityLatitude, origingCityLongitude, destinyCityLatitude, destinyCityLongitude);
-      basePrice.value = await calculatePrice(origingCountry.value, destinyCountry.value, distance, adultQuantity.value, kidQuantity.value, typeOfFlight.value);
+      distance.value  = await getDistance(origingCityLatitude, origingCityLongitude, destinyCityLatitude, destinyCityLongitude);
+      basePrice.value = await calculatePrice(origingCountry.value, destinyCountry.value, distance.value, adultQuantity.value, kidQuantity.value, typeOfFlight.value, totalAbatimento.value);
       console.log(basePrice.value);
     }
 
@@ -240,7 +247,9 @@ export default defineComponent({
       addKid,
       removeKid,
       calculate,
-      basePrice
+      distance,
+      basePrice,
+      totalAbatimento
     }
   }
 });

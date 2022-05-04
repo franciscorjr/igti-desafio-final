@@ -88,7 +88,13 @@ export default function useData() {
                     Math.sin(diffLongitudeRadians / 2)
                 )
             );
-        return kmDistance;
+        return kmDistance.toFixed(2);
+    }
+
+    const abatimentoPorMilhas = async (miles: number) => {
+        if(miles){
+            return (miles * 0.02).toFixed(2);            
+        }
     }
 
     const calculatePrice = async (
@@ -97,10 +103,12 @@ export default function useData() {
         distance: number,
         adultos: number,
         criancas: number,
-        classe: string) => {
+        classe: string,
+        totalAbatimento: number) => {
 
         let indiceAdulto: number;
         let indiceCrianca: number;
+        let total: number;
 
         if (origingCoutry === destinyCoutry) {
             indiceAdulto = (adultos * 0.3);
@@ -115,12 +123,19 @@ export default function useData() {
 
         if(classe === 'executiva'){
             adultBasePrice = (adultBasePrice * 1.8);
-            kidBasePrice   = (kidBasePrice   * 1.48);
+            kidBasePrice   = (kidBasePrice   * 1.4);
+        }
+
+        if(totalAbatimento){
+            total = ((adultBasePrice + kidBasePrice) - totalAbatimento);
+        }else{
+            total = (adultBasePrice + kidBasePrice);
         }
 
         return {
-            'adultBasePrice': parseFloat(adultBasePrice.toPrecision(2)),
-            'kidBasePrice': parseFloat(kidBasePrice.toFixed(2))
+            'adultBasePrice': parseFloat(adultBasePrice.toFixed(2)),
+            'kidBasePrice': parseFloat(kidBasePrice.toFixed(2)),
+            'total': parseFloat(total.toFixed(2))
         }
 
     }
@@ -137,6 +152,7 @@ export default function useData() {
         getOriginCityLatitude,
         getOriginCityLongitude,
         getDistance,
-        calculatePrice
+        calculatePrice,
+        abatimentoPorMilhas
     }
 } 
